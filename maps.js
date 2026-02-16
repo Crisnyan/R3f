@@ -1,7 +1,3 @@
-import js from "@eslint/js"
-import { SimplexNoise } from "three/examples/jsm/Addons.js"
-import { depth, roughness } from "three/tsl"
-
 export const testMap = `
 wwwwwwwwww
 wwowwwwoww
@@ -87,7 +83,8 @@ export const parseMap = (map) => {
          case 'e':
             Entities.push({
               id,
-              type: 'enemy'
+              type: 'enemy',
+              position
             })
             break
           }
@@ -99,7 +96,7 @@ export const parseMap = (map) => {
     Entities,
     mapInfo : {
       width: mapWidth,
-      height: mapLength,
+      height: mapHeight,
       depth: mapDepth
     }
   }       

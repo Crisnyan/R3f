@@ -1,21 +1,22 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { createRoot } from 'react-dom/client'
 import { MapControls, OrthographicCamera } from "@react-three/drei"
-import { simpleMap, testMap, emptyMap } from './maps'
+import { simpleMap, testMap, emptyMap, parseMap } from './maps'
+import { useGame } from './gameState'
 
 const s = 0.95
 
-function Obstacle(props) {
-  const oRef = useRef()
+function Obstacle({position, ...props}) {
   const [active, setActive] = 
   useState(false)
   return (
   <mesh 
     {...props}
-    ref = {oRef}
-    onClick = {(event) => 
-      setActive(!active)}>
+    position = {position}
+    onClick = {(event) => {
+      event.stopPropagation()
+      setActive(!active)}}>
     <boxGeometry 
     args={[s,s,s]}/>
     <meshStandardMaterial 
@@ -25,18 +26,21 @@ function Obstacle(props) {
   )
 }
 
-function Player(props) {
+function Player({position, ...props}) {
   const pRef = useRef()
-  const [selected, setSelected] = useState(false)
+  const [selected, setSelected] = 
+  useState(false)
   return (
     <mesh
     {...props}
+    position={position}
     ref={pRef}
-    onClick = {(event) =>
-      setSelected(!selected)}>
+    onClick = {(event) => {
+      event.stopPropagation()
+      setSelected(!selected)}}>
     <boxGeometry args={[s,s,s]}/>
     <meshStandardMaterial
-    color={selected ? 'blue' : 'green'}/>
+    color={selected ? 'white' : 'blue'}/>
     </mesh>
   )
 }
@@ -48,15 +52,29 @@ function Floor() {
     rotation={[-Math.PI/2, 0,0]}
     receiveShadow>
     <planeGeometry args={[10,10]}/>
-    <meshStandardMaterial/>
+    <meshStandardMaterial
+    color='green'/>
   </mesh>
   )
 }
 
 function Scene(props) {
-  const map = testMap
-  const [entities, setEntities] = useState(() =>
-  parseMap(map))
+  const map = simpleMap
+  const { staticTiles, Entities,
+    mapInfo} = useMemo(() => 
+      parseMap(map), [map])
+
+  const init = useGame(state => 
+    state.init)
+  const players = useGame(state =>
+    state.players)
+  const enemies = useGame(state =>
+    state.enemies)
+
+  useEffect(() => {
+    init(Entities, staticTiles,
+      mapInfo)}, [Entities, mapInfo,
+        staticTiles])
   return (
   <>
     <ambientLight intensity={Math.PI/4}/>
@@ -69,8 +87,12 @@ function Scene(props) {
     far={100} />
     <MapControls makeDefault
     target={[0,0,0]}/>
-    {obstacles}
-    {players}
+    {staticTiles.map((tile) => 
+      <Obstacle key={tile.id}
+      position={[tile.position.x - 5,
+        tile.position.y + 0.5,
+        tile.position.z - 5]} />
+      )}
     <Floor/>
   </>
   )
