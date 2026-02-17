@@ -34,16 +34,16 @@ oooooooooo
 `
 
 export const simpleMap = `
-wwwoooooww
-ooooowoooo
+wwwooeooww
+oooooooooo
 oooooooooo
 oooowwooow
-ooowwwwooo
+owowwwwooo
 ooowwwwoow
 oooowwoooo
 woooooooow
-oooooooooo
-oooooooooo
+owoooooooo
+oooopooooo
 `
 
 export const emptyMap = ``

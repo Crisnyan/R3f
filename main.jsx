@@ -5,7 +5,7 @@ import { MapControls, OrthographicCamera } from "@react-three/drei"
 import { simpleMap, testMap, emptyMap, parseMap } from './maps'
 import { useGame } from './gameState'
 
-const s = 0.95
+const s = 0.975
 
 function Obstacle({position, ...props}) {
   const [active, setActive] = 
@@ -22,6 +22,25 @@ function Obstacle({position, ...props}) {
     <meshStandardMaterial 
     color={active ? 'hotpink' : 'orange'}
     wireframe={false}/>
+    </mesh>
+  )
+}
+
+function Enemy({position, ...props}) {
+  const eRef = useRef()
+  const [selected, setSelected] = 
+  useState(false)
+  return (
+  <mesh
+    {...props}
+    position={position}
+    ref={eRef}
+    onClick = {(event) => {
+      event.stopPropagation()
+      setSelected(!selected)}}>
+    <boxGeometry args={[s,s,s]}/>
+    <meshStandardMaterial
+     color={selected ? 'black' : 'red'}/>
     </mesh>
   )
 }
@@ -86,13 +105,27 @@ function Scene(props) {
     near={-50}
     far={100} />
     <MapControls makeDefault
-    target={[0,0,0]}/>
+    target={[0,0,0]}
+    maxPolarAngle={Math.PI / 2}
+    minPolarAngle={0}/>
     {staticTiles.map((tile) => 
       <Obstacle key={tile.id}
       position={[tile.position.x - 5,
         tile.position.y + 0.5,
         tile.position.z - 5]} />
       )}
+    {Object.values(players).map((p) =>
+      <Player key={p.id}
+      position={[p.position.x - 5,
+        p.position.y + 0.5,
+        p.position.z - 5]} />
+      )}
+    {Object.values(enemies).map((e) =>
+      <Enemy key={e.id}
+      position={[e.position.x - 5,
+        e.position.y + 0.5,
+        e.position.z - 5]} />
+    )}
     <Floor/>
   </>
   )
