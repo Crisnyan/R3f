@@ -122,7 +122,7 @@ function Scene(props) {
         makeDefault
         position={[5, 5, 5]}
         zoom={25}
-        near={1}
+        near={-50}
         far={100}
       />
       <MapControls
