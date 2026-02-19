@@ -49,7 +49,7 @@ oooopooooo
 export const emptyMap = ``
 
 export const parseMap = (map) => {
-  const Entities = []
+  const entities = []
   const staticTiles = []
   let mapWidth = 0 //x
   let mapHeight = 0 //y
@@ -74,14 +74,14 @@ export const parseMap = (map) => {
             })
             break
           case 'p':
-            Entities.push({
+            entities.push({
               id,
               type: 'player',
               position
             })
             break
          case 'e':
-            Entities.push({
+            entities.push({
               id,
               type: 'enemy',
               position
@@ -93,7 +93,7 @@ export const parseMap = (map) => {
     })  
   return {
     staticTiles,
-    Entities,
+    entities,
     mapInfo : {
       width: mapWidth,
       height: mapHeight,
