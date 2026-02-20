@@ -62,9 +62,6 @@ export const useGame = create((set, get) => ({
       worldMap[obstacle.id] = true;
     });
     Entities.forEach((entity) => {
-      state.entities[entity.id] = {
-        ...entity
-      }
       if (entity.type == "player") {
         playEnt[entity.id] = {
           ...entity,
