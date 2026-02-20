@@ -21,8 +21,10 @@ export const useGame = create((set, get) => ({
       }
 
       let ent = state.players[Id];
-      if (!ent) ent = state.enemies[Id];
-      const hlId = state.dijkstra(ent.position, ent.dice[ent.dice.length - 1]);
+      if (!ent)
+        ent = state.enemies[Id];
+      const hlId = state.dijkstra(
+        ent.position, ent.dice[ent.dice.length - 1]);
       const hlTiles = {};
       hlId.forEach((id) => (hlTiles[id] = true));
       return {
@@ -30,7 +32,18 @@ export const useGame = create((set, get) => ({
         highlights: hlTiles,
       };
     }),
-
+  moveTo: (tileId) => set((state) => {
+    const [x, y, z] = tileId.split(
+      '-').map(Number)
+    const dest = {x, y: (y + 1), z}
+    let ent = 
+    state.players[state.selectedEnt]
+    if (!ent)
+      ent = state.enemies[state.selectedEnt]
+    const path = state.Astar(
+      ent.position, dest)
+  }
+),
   changeMode: () => set((state) => ({ executeTurn: !state.executeTurn })),
 
   init: (Entities, staticTiles, mapInfo) => {
@@ -49,6 +62,9 @@ export const useGame = create((set, get) => ({
       worldMap[obstacle.id] = true;
     });
     Entities.forEach((entity) => {
+      state.entities[entity.id] = {
+        ...entity
+      }
       if (entity.type == "player") {
         playEnt[entity.id] = {
           ...entity,
@@ -95,7 +111,7 @@ export const useGame = create((set, get) => ({
       y < 0 ||
       z < 0 ||
       x >= state.mapBounds.width ||
-      y >= state.mapBounds.height ||
+      y >= state.mapBounds.height + 1  ||
       z >= state.mapBounds.depth ||
       state.obstacles[key] ||
       state.getEntity(x, y, z)
@@ -121,16 +137,16 @@ export const useGame = create((set, get) => ({
     const nodes = [];
     const dist = {};
     const MOV = [
-      [1, 0, 0],
-      [-1, 0, 0],
-      [0, 1, 0],
-      [0, -1, 0],
-      [0, 0, 1],
-      [0, 0, -1],
+      [1, 0, 0], [-1, 0, 0],
+      [0, 0, 1], [0, 0, -1],
+      [1, 1, 0], [-1, 1, 0],
+      [0, 1, 1], [0, 1, -1],
+      [1, -1, 0], [-1, -1, 0],
+      [0, -1, 1], [0, -1, -1]
     ];
     nodes.push(`${pos.x}-${pos.y}-${pos.z}`)
     for (let z = 0; z < max.depth; ++z) {
-      for (let y = 0; y < max.height; ++y) {
+      for (let y = 0; y < max.height + 1; ++y) {
         for (let x = 0; x < max.width; ++x) {
           if (state.isBlocked(x, y, z) || !state.hasFloor(x, y, z)) continue;
           const key = `${x}-${y}-${z}`;
@@ -154,7 +170,6 @@ export const useGame = create((set, get) => ({
       if (bestDist > maxCost || bestKey === null) break;
       visited.add(bestKey);
       const [x, y, z] = bestKey.split("-").map(Number);
-
       for (const [dx, dy, dz] of MOV) {
         const nx = x + dx;
         const ny = y + dy;
@@ -166,16 +181,21 @@ export const useGame = create((set, get) => ({
         if (!(nkey in dist)) continue;
 
         let stepCost = 1;
-        if (dy === -1) stepCost = 0;
+        if (dy === 1) stepCost += 1;
         const newCost = dist[bestKey] + stepCost;
         if (newCost < dist[nkey]) dist[nkey] = newCost;
       }
     }
     const reachable = [];
     for (const key in dist) {
-      if (dist[key] <= maxCost) reachable.push(key);
+      if (dist[key] <= maxCost) {
+        const [x, y, z] = 
+        key.split("-").map(Number);   
+        reachable.push(`${x}-${y - 1}-${z}`);
+      }
     }
-
     return reachable;
+  },
+  Astar: (src, dest) => {
   },
 }));

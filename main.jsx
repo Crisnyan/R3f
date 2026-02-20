@@ -7,7 +7,7 @@ import { useGame } from "./gameState";
 
 const s = 0.975;
 
-function Obstacle({ position, ...props }) {
+function Obstacle({ position, highlighted, ...props }) {
   const [active, setActive] = useState(false);
   return (
     <mesh
@@ -16,18 +16,17 @@ function Obstacle({ position, ...props }) {
       onClick={(event) => {
         event.stopPropagation();
         setActive(!active);
-      }}
-    >
+      }}>
       <boxGeometry args={[s, s, s]} />
       <meshStandardMaterial
-        color={active ? "hotpink" : "orange"}
+        color={highlighted ? "hotpink" : "orange"}
         wireframe={false}
       />
     </mesh>
   );
 }
 
-function Enemy({ position, ...props }) {
+function Enemy({ id, position, ...props }) {
   const eRef = useRef();
   const [selected, setSelected] = useState(false);
   return (
@@ -46,9 +45,13 @@ function Enemy({ position, ...props }) {
   );
 }
 
-function Player({ position, ...props }) {
+function Player({ id, position, ...props }) {
   const pRef = useRef();
-  const [selected, setSelected] = useState(false);
+  const [selected, setSelected] = 
+  useState(false)
+  const selectEntity = 
+  useGame(state =>
+    state.selectEntity);
   return (
     <mesh
       {...props}
@@ -56,7 +59,8 @@ function Player({ position, ...props }) {
       ref={pRef}
       onClick={(event) => {
         event.stopPropagation();
-        setSelected(!selected);
+        setSelected(!selected)
+        selectEntity(id);
       }}
     >
       <boxGeometry args={[s, s, s]} />
@@ -65,20 +69,17 @@ function Player({ position, ...props }) {
   );
 }
 
-function Floor({ position, ...props }) {
-  const [isHl, setHl] = useState(false)
+function Floor({ position, highlighted, ...props }) {
   return (
     <mesh 
     {...props}
-    position={position} receiveShadow
-    on
+    position={position} 
+    receiveShadow
     onClick={(event) => 
-    {event.stopPropagation()
-      setHl(!isHl)
-    }
+    {event.stopPropagation()}
     }>
       <boxGeometry args={[s, 0.5 * s, s]} />
-      <meshStandardMaterial color={isHl ? 
+      <meshStandardMaterial color={highlighted ? 
       'hotpink' : 'green'} />
     </mesh>
   );
@@ -86,18 +87,26 @@ function Floor({ position, ...props }) {
 
 function GridFloor(props) {
   const tiles = [];
+  const highlights = useGame(state =>
+    state.highlights);
 
   for (let z = 0; z < 10; ++z) {
     for (let x = 0; x < 10; ++x) {
+      const key = `${x}-${-1}-${z}`
       tiles.push(
         <Floor
-          key={`${x}-${z}`}
+          key={key}
           position={[x - 5, -0.25, z - 5]}
-        />,
+          highlighted={highlights[key]}
+        />
       );
     }
   }
-  return <group>{tiles}</group>;
+  return (
+  <group>
+    {tiles}
+    </group>
+    )
 }
 
 function Scene(props) {
@@ -107,13 +116,22 @@ function Scene(props) {
     [map],
   );
 
-  const init = useGame((state) => state.init);
-  const players = useGame((state) => state.players);
-  const enemies = useGame((state) => state.enemies);
+  const init = 
+  useGame((state) =>
+    state.init);
+  const players = 
+  useGame((state) => 
+    state.players);
+  const enemies = 
+  useGame((state) => 
+    state.enemies);
 
   useEffect(() => {
     init(entities, staticTiles, mapInfo);
   }, [entities, mapInfo, staticTiles]);
+  const highlights = 
+  useGame(state =>
+    state.highlights)
   return (
     <>
       <ambientLight intensity={Math.PI / 4} />
@@ -139,17 +157,20 @@ function Scene(props) {
             tile.position.y + 0.5,
             tile.position.z - 5,
           ]}
+          highlighted={highlights[tile.id]}
         />
       ))}
       {Object.values(players).map((p) => (
         <Player
           key={p.id}
+          id={p.id}
           position={[p.position.x - 5, p.position.y + 0.5, p.position.z - 5]}
         />
       ))}
       {Object.values(enemies).map((e) => (
         <Enemy
           key={e.id}
+          id={e.id}
           position={[e.position.x - 5, e.position.y + 0.5, e.position.z - 5]}
         />
       ))}

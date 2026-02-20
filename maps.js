@@ -22,7 +22,7 @@ owoooooowo
 wwooooooww,
 
 wwwwwwwwww
-wwooooooww
+wwoopoooww
 woooooooow
 woooooooow
 woooooooow
@@ -41,9 +41,9 @@ oooowwooow
 owowwwwooo
 ooowwwwoow
 oooowwoooo
-woooooooow
-owoooooooo
-oooopooooo
+woooowooow
+owooowoooo
+oooopwoooo
 `
 
 export const emptyMap = ``
